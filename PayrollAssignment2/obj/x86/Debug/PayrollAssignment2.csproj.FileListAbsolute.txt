@@ -1,0 +1,8 @@
+C:\Users\Kendall Townsend\Desktop\PayrollAssignment2\bin\Debug\PayrollAssignment2.exe
+C:\Users\Kendall Townsend\Desktop\PayrollAssignment2\bin\Debug\PayrollAssignment2.pdb
+C:\Users\Kendall Townsend\Desktop\PayrollAssignment2\obj\x86\Debug\ResolveAssemblyReference.cache
+C:\Users\Kendall Townsend\Desktop\PayrollAssignment2\obj\x86\Debug\PayrollAssignment2.Properties.Resources.resources
+C:\Users\Kendall Townsend\Desktop\PayrollAssignment2\obj\x86\Debug\GenerateResource.read.1.tlog
+C:\Users\Kendall Townsend\Desktop\PayrollAssignment2\obj\x86\Debug\GenerateResource.write.1.tlog
+C:\Users\Kendall Townsend\Desktop\PayrollAssignment2\obj\x86\Debug\PayrollAssignment2.exe
+C:\Users\Kendall Townsend\Desktop\PayrollAssignment2\obj\x86\Debug\PayrollAssignment2.pdb

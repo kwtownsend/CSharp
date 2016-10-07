@@ -1,0 +1,8 @@
+C:\Users\Kendall Townsend\Desktop\Assignment5\bin\Debug\Assignment5.exe
+C:\Users\Kendall Townsend\Desktop\Assignment5\bin\Debug\Assignment5.pdb
+C:\Users\Kendall Townsend\Desktop\Assignment5\obj\x86\Debug\ResolveAssemblyReference.cache
+C:\Users\Kendall Townsend\Desktop\Assignment5\obj\x86\Debug\Assignment5.Properties.Resources.resources
+C:\Users\Kendall Townsend\Desktop\Assignment5\obj\x86\Debug\GenerateResource.read.1.tlog
+C:\Users\Kendall Townsend\Desktop\Assignment5\obj\x86\Debug\GenerateResource.write.1.tlog
+C:\Users\Kendall Townsend\Desktop\Assignment5\obj\x86\Debug\Assignment5.exe
+C:\Users\Kendall Townsend\Desktop\Assignment5\obj\x86\Debug\Assignment5.pdb

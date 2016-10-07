@@ -1,0 +1,18 @@
+C:\Users\Kendall Townsend\Desktop\Temperature Project\bin\Debug\Temperature Project.exe
+C:\Users\Kendall Townsend\Desktop\Temperature Project\bin\Debug\Temperature Project.pdb
+C:\Users\Kendall Townsend\Desktop\Temperature Project\obj\x86\Debug\ResolveAssemblyReference.cache
+C:\Users\Kendall Townsend\Desktop\Temperature Project\obj\x86\Debug\Temperature_Project.Properties.Resources.resources
+C:\Users\Kendall Townsend\Desktop\Temperature Project\obj\x86\Debug\GenerateResource.read.1.tlog
+C:\Users\Kendall Townsend\Desktop\Temperature Project\obj\x86\Debug\GenerateResource.write.1.tlog
+C:\Users\Kendall Townsend\Desktop\Temperature Project\obj\x86\Debug\Temperature Project.exe
+C:\Users\Kendall Townsend\Desktop\Temperature Project\obj\x86\Debug\Temperature Project.pdb
+C:\Users\Kendall Townsend\Desktop\Temperature Project\obj\x86\Debug\Temperatureuserinterface.resources
+C:\Users\Kendall Townsend\Desktop\Assignment 1 223N\Temperature Project\obj\x86\Debug\Temperature Project.exe
+C:\Users\Kendall Townsend\Desktop\Assignment 1 223N\Temperature Project\obj\x86\Debug\Temperature Project.pdb
+C:\Users\Kendall Townsend\Desktop\Assignment 1 223N\Temperature Project\obj\x86\Debug\ResolveAssemblyReference.cache
+C:\Users\Kendall Townsend\Desktop\Assignment 1 223N\Temperature Project\obj\x86\Debug\Temperatureuserinterface.resources
+C:\Users\Kendall Townsend\Desktop\Assignment 1 223N\Temperature Project\obj\x86\Debug\Temperature_Project.Properties.Resources.resources
+C:\Users\Kendall Townsend\Desktop\Assignment 1 223N\Temperature Project\obj\x86\Debug\GenerateResource.read.1.tlog
+C:\Users\Kendall Townsend\Desktop\Assignment 1 223N\Temperature Project\obj\x86\Debug\GenerateResource.write.1.tlog
+C:\Users\Kendall Townsend\Desktop\Assignment 1 223N\Temperature Project\bin\Debug\Temperature Project.exe
+C:\Users\Kendall Townsend\Desktop\Assignment 1 223N\Temperature Project\bin\Debug\Temperature Project.pdb

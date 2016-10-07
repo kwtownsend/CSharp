@@ -1,0 +1,8 @@
+C:\Users\Kendall Townsend\Desktop\Cpsc223Assignment4\obj\x86\Debug\ResolveAssemblyReference.cache
+C:\Users\Kendall Townsend\Desktop\Cpsc223Assignment4\obj\x86\Debug\Cpsc223Assignment4.Properties.Resources.resources
+C:\Users\Kendall Townsend\Desktop\Cpsc223Assignment4\obj\x86\Debug\GenerateResource.read.1.tlog
+C:\Users\Kendall Townsend\Desktop\Cpsc223Assignment4\obj\x86\Debug\GenerateResource.write.1.tlog
+C:\Users\Kendall Townsend\Desktop\Cpsc223Assignment4\bin\Debug\Cpsc223Assignment4.exe
+C:\Users\Kendall Townsend\Desktop\Cpsc223Assignment4\bin\Debug\Cpsc223Assignment4.pdb
+C:\Users\Kendall Townsend\Desktop\Cpsc223Assignment4\obj\x86\Debug\Cpsc223Assignment4.exe
+C:\Users\Kendall Townsend\Desktop\Cpsc223Assignment4\obj\x86\Debug\Cpsc223Assignment4.pdb
