@@ -8,21 +8,21 @@
 //  Assignment number: 1
 //  Due date: 2014-Aug-25
 //Project information
-//  Project title: Finding the area of a trapezoid
-//  Purpose: to take 3 user inputted lengths and find the area of a trapezoid
+//  Project title: 
+//  Purpose: 
 //  Status: Performs correctly on Linux 64-bit platforms with AVX
-//  Project files: trapezoid.cpp, trapezoid.asm
+//  Project files: amort.cpp, amort.asm, amortfunc.cpp
 //Module information
-//  This module's call name: trapezoid.out  This module is invoked by the user
+//  This module's call name: amort.out  This module is invoked by the user
 //  Language: C++
-//  Date last modified: 2014-Aug-21
-//  Purpose: This module is the top level driver: it will call trapezoidarea
-//  File name: trapezoid.cpp
+//  Date last modified: 2014-Sep-28
+//  Purpose: This module is the top level driver: it will call amort
+//  File name: amort.cpp
 //  Status: No known errors.
 //  Future enhancements: None planned
 //Translator information
-//  Gnu compiler: g++ -c -m64 -Wall -l trapezoid-driver.lis -o trapezoid-driver.o trapezoid.cpp
-//  Gnu linker:   g++ -m64 -o trapezoid.out trapezoid-driver.o trapezoid.o
+//  Gnu compiler: g++ -c -m64 -Wall -l powers-driver.lis -o powers-driver.o powers.cpp
+//  Gnu linker:   g++ -m64 -o powers.out powers-driver.o powers.o debug.o
 //References and credits
 //  No references: this module is standard C++
 //Format information
@@ -37,14 +37,14 @@
 #include <ctime>
 #include <cstring>
 
-extern "C" double trapezoidarea();
+extern "C" double amort();
 
 int main(){
 
   double return_code = -99.99;
 
   printf("%s","This Program is brought to you by Kendall Townsend \n");
-  return_code = trapezoidarea();
+  return_code = amort();
   printf("%s%1.18lf%s\n","The return code received by the driver is ",return_code,
          ". Bye.");
 

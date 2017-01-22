@@ -8,8 +8,8 @@
 ;  Assignment number: 3
 ;  Due date: 2014-Sep-29
 ;Project information
-;  Project title: Amortization Schedule
-;  Purpose: Inputting 4 loans with %interest and amount of months and generating an amort schedule
+;  Project title: 
+;  Purpose: Find the number of 
 ;  Status: No known errors
 ;  Project files: amort.cpp, amort.asm, amortfunc.cpp
 ;Module information
@@ -18,7 +18,7 @@
 ;  Syntax: Intel
 ;  Date last modified: 2014-Sep-28
 ;  Purpose: To learn how to use c++ functions and for loops in assembly
-;  File name: amort.asm
+;  File name: powers.asm
 ;  Status: This module functions as expected as a demonstrator.
 ;  Future enhancements: None planned
 ;Translator information
@@ -32,7 +32,8 @@
 ;
 ;===== Begin code area ====================================================================================================================================================
 
-%include "debug.inc"
+
+
 
 extern printf                                               ;External C++ function for writing to standard output device
 
@@ -46,9 +47,7 @@ segment .data                                               ;Place initialized d
 ;===== Declare some messages ==============================================================================================================================================
 
 
-startupmessage db "Welcome to the Bank of Kendall Island ", 10, 0
 
-followupmessage db "Kendall Townsend, Chief Loan Officer ", 10, 0
 
 promptmessage1 db "Please enter one value for exponents and press enter: ", 0
 
@@ -191,19 +190,6 @@ startapplication: ;===== Begin the application here: demonstrate floating point 
 
 
 
-;=========== Show the startup message =====================================================================================================================================
-
-mov qword  rax, 0                                           ;No data from SSE will be printed
-mov        rdi, stringformat                                ;"%s"
-mov        rsi, startupmessage                              ;"Welcome to the Bank of Kendall Island "
-call       printf                                           ;Call a library function to make the output
-
-;=========== Show the followup message =====================================================================================================================================
-
-mov qword  rax, 0                                           ;No data from SSE will be printed
-mov        rdi, stringformat                                ;"%s"
-mov        rsi, followupmessage                             ;"Kendall Townsend, Chief Loan Officer "
-call       printf                                           ;Call a library function to make the output
 
 
 
@@ -461,14 +447,13 @@ push rbx
 movsd      xmm1, [rsp]                                     ;take the number 0 from stack and put it into xmm11
 pop rax
 
-showymmregisters 225
 subsd xmm0, xmm1
-showymmregisters 225
+
 divsd xmm0, xmm2
-showymmregisters 225
+
 divsd xmm0, xmm3
 
-showymmregisters 225
+
 
 ;=========== Show answermessage2 ==========================================================================================================================================
 push qword 0

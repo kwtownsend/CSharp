@@ -1,0 +1,535 @@
+;========1=========2=========3=========4=========5=========6=========7=========8=========9=========0=========1=========2=========3=========4=========5=========6=========7**
+;Author information
+;  Author name: Kendall Townsend
+;  Author email: kendallcar@csu.fullerton.edu
+;  Author location: CSUF
+;Course information
+;  Course number: CPSC240
+;  Assignment number: 3
+;  Due date: 2014-Sep-29
+;Project information
+;  Project title: 
+;  Purpose: Find the number of terms in a taylor series
+;  Status: No known errors
+;  Project files: amort.cpp, amort.asm, amortfunc.cpp
+;Module information
+;  This module's call name: amort	
+;  Language: X86-64
+;  Syntax: Intel
+;  Date last modified: 2014-Sep-28
+;  Purpose: To learn how to use c++ functions and for loops in assembly
+;  File name: powers.asm
+;  Status: This module functions as expected as a demonstrator.
+;  Future enhancements: None planned
+;Translator information
+;  Linux: nasm -f elf64 -l powers.lis -o powers.o powers.asm
+;References and credits
+;  holliday fp-io project
+;Format information
+;  Page width: 172 columns
+;  Begin comments: 61
+;  Optimal print specification: Landscape, 7 points or smaller, monospace, 8½x11 paper
+;
+;===== Begin code area ====================================================================================================================================================
+
+
+
+
+extern printf                                               ;External C++ function for writing to standard output device
+
+extern scanf                                                ;External C++ function for reading from the standard input device
+
+global amort                                                ;This makes amort callable by functions outside of this file.
+
+segment .data                                               ;Place initialized data here
+
+
+;===== Declare some messages ==============================================================================================================================================
+
+
+
+
+promptmessage1 db "Please enter one value for exponents and press enter: ", 0
+
+promptmessage2 db "Please enter one value for exponents and press enter: ", 0
+
+answermessage1 db "You entered 0x%016lx and 0x%016lx", 10, 0
+
+promptmessage3 db "Enter the integer for epsilon: ", 0
+
+promptmessage4 db "The Taylor series algorithm has begun. Please be patient.", 10, 0
+
+promptmessage5 db "The number of terms in the Taylor series is %1.0lf", 10, 0
+
+promptmessage6 db "%1.20lf seconds", 10, 0
+
+clockmessage1 db "The clock before the algorithm began was %ld", 10, 0
+
+clockmessage2 db "The clock when the alogirthm ended was %1.0ld", 10, 0
+
+xsavenotsupported.notsupportedmessage db "The xsave instruction and the xrstor instruction are not supported in this microprocessor.", 10
+                                      db "However, processing will continue without backing up state component data", 10, 0
+
+
+
+stringformat db "%s", 0                                     ;general string format
+
+xsavenotsupported.stringformat db "%s", 0
+
+eight_byte_format db "%lf", 0                               ;general 8-byte float format
+
+segment .bss                                                ;Place un-initialized data here.
+
+align 64                                                    ;Insure that the inext data declaration starts on a 64-byte boundar.
+backuparea resb 832                                         ;Create an array for backup storage having 832 bytes.
+
+align 64                                                    ;Insure that the inext data declaration starts on a 64-byte boundar.
+localbackuparea resb 832                                    ;Create an array for backup storage having 832 bytes.
+
+;===== Begin executable instructions here =================================================================================================================================
+
+
+segment .text                                               ;Place executable instructions in this segment.
+
+amort:                                                      ;Entry point.  Execution begins here.
+
+;=========== Back up all the GPRs whether used in this program or not =====================================================================================================
+
+push       rbp                                              ;Save a copy of the stack base pointer
+mov        rbp, rsp                                         ;We do this in order to be 100% compatible with C and C++.
+push       rbx                                              ;Back up rbx
+push       rcx                                              ;Back up rcx
+push       rdx                                              ;Back up rdx
+push       rsi                                              ;Back up rsi
+push       rdi                                              ;Back up rdi
+push       r8                                               ;Back up r8
+push       r9                                               ;Back up r9
+push       r10                                              ;Back up r10
+push       r11                                              ;Back up r11
+push       r12                                              ;Back up r12
+push       r13                                              ;Back up r13
+push       r14                                              ;Back up r14
+push       r15                                              ;Back up r15
+pushf                                                       ;Back up rflags
+
+
+;==========================================================================================================================================================================
+;===== Begin State Component Backup =======================================================================================================================================
+;==========================================================================================================================================================================
+
+;=========== Before proceeding verify that this computer supports xsave and xrstor ========================================================================================
+;Bit #26 of rcx, written rcx[26], must be 1; otherwise xsave and xrstor are not supported by this computer.
+;Preconditions: rax holds 1.
+mov        rax, 1
+
+;Execute the cpuid instruction
+cpuid
+
+;Postconditions: If rcx[26]==1 then xsave is supported.  If rcx[26]==0 then xsave is not supported.
+
+;=========== Extract bit #26 and test it ==================================================================================================================================
+
+and        rcx, 0x0000000004000000                          ;The mask 0x0000000004000000 has a 1 in position #26.  Now rcx is either all zeros or
+                                                            ;has a single 1 in position #26 and zeros everywhere else.
+cmp        rcx, 0                                           ;Is (rcx == 0)?
+je         xsavenotsupported                                ;Skip the section that backs up state component data.
+
+;========== Call the function to obtain the bitmap of state components ====================================================================================================
+
+;Preconditions
+mov        rax, 0x000000000000000d                          ;Place 13 in rax.  This number is provided in the Intel manual
+mov        rcx, 0                                           ;0 is parameter for subfunction 0
+
+;Call the function
+cpuid                                                       ;cpuid is an essential function that returns information about the cpu
+
+;Postconditions (There are 2 of these):
+
+;1.  edx:eax is a bit map of state components managed by xsave.  At the time this program was written (2014 June) there were exactly 3 state components.  Therefore, bits
+;    numbered 2, 1, and 0 are important for current cpu technology.
+;2.  ecx holds the number of bytes required to store all the data of enabled state components. [Post condition 2 is not used in this program.]
+;This program assumes that under current technology (year 2014) there are at most three state components having a maximum combined data storage requirement of 832 bytes.
+;Therefore, the value in ecx will be less than or equal to 832.
+
+;Precaution: As an insurance against a future time when there will be more than 3 state components in a processor of the X86 family the state component bitmap is masked to
+;allow only 3 state components maximum.
+
+mov        r15, 7                                           ;7 equals three 1 bits.
+and        rax, r15                                         ;Bits 63-3 become zeros.
+mov        r15, 0                                           ;0 equals 64 binary zeros.
+and        rdx, r15                                         ;Zero out rdx.
+
+;========== Save all the data of all three components except GPRs =========================================================================================================
+
+;The instruction xsave will save those state components with on bits in the bitmap.  At this point edx:eax continues to hold the state component bitmap.
+
+;Precondition: edx:eax holds the state component bit map.  This condition has been met by the two pops preceding this statement.
+xsave      [backuparea]                                     ;All the data of state components managed by xsave have been written to backuparea.
+
+push qword -1                                               ;Set a flag (-1 = true) to indicate that state component data were backed up.
+jmp        startapplication
+
+;========== Show message xsave is not supported on this platform ==========================================================================================================
+xsavenotsupported:
+
+mov        rax, 0
+mov        rdi, .stringformat
+mov        rsi, .notsupportedmessage                        ;"The xsave instruction is not suported in this microprocessor.
+call       printf
+
+push qword 0                                                ;Set a flag (0 = false) to indicate that state component data were not backed up.
+
+;==========================================================================================================================================================================
+;===== End of State Component Backup ======================================================================================================================================
+;==========================================================================================================================================================================
+
+
+;==========================================================================================================================================================================
+startapplication: ;===== Begin the application here: demonstrate floating point i/o =======================================================================================
+;==========================================================================================================================================================================
+
+
+
+
+
+
+;=========== Prompt for floating point number =============================================================================================================================
+
+mov qword  rax, 0                                           ;No data from SSE will be printed
+mov        rdi, stringformat                                ;"%s"
+mov        rsi, promptmessage1                               ;"Enter the power consumption of device 3 (watts):"
+call       printf                                           ;Call a library function to make the output
+
+;===== how to input one float number=============================================================================
+push qword 0
+push qword 0
+
+push qword 0                                                ;Reserve 8 bytes of storage for the incoming number
+mov  qword rax, 0                                           ;SSE is not involved in this scanf operation
+mov        rdi, eight_byte_format                          ;"%lf"
+mov        rsi, rsp                                         ;Give scanf a point to the reserved storage
+call       scanf                                           ;Call a library function to do the input work
+
+
+;=========== Prompt for floating point number =============================================================================================================================
+
+mov qword  rax, 0                                           ;No data from SSE will be printed
+mov        rdi, stringformat                                ;"%s"
+mov        rsi, promptmessage2                               ;"Enter the power consumption of device 4 (watts):"
+call       printf                                           ;Call a library function to make the output
+
+;===== how to input one float number=============================================================================
+
+push qword 0                                                ;Reserve 8 bytes of storage for the incoming number
+mov  qword rax, 0                                           ;SSE is not involved in this scanf operation
+mov        rdi, eight_byte_format                          ;"%lf"
+mov        rsi, rsp                                         ;Give scanf a point to the reserved storage
+call       scanf                                           ;Call a library function to do the input work
+
+
+;===== put numbers on stack into ymm15=============================================================================
+vmovupd ymm15, [rsp]
+
+
+
+
+
+;=========== Show the first answermessage message =========================================================================================================================
+push qword 0
+mov qword  rax, 0                                           ;No data from SSE will be printed
+mov        rdi, answermessage1                              ;"Loan amounts : %23.18lf %23.18lf %23.18lf %23.18lf"
+mov        rsi, [rsp+8]
+mov        rdx, [rsp+16]
+
+call       printf                                           ;Call a library function to make the output
+pop        rax                                          ;Make free the storage that was used by scanf
+pop        rax
+pop        rax
+pop        rax
+pop        rax
+
+;=========== Prompt for floating point number =============================================================================================================================
+
+mov qword  rax, 0                                           ;No data from SSE will be printed
+mov        rdi, stringformat                                ;"%s"
+mov        rsi, promptmessage3                              ;"Enter the time of the loans as a whole number of months: "
+call       printf                                           ;Call a library function to make the output
+
+;===== how to input one float number=============================================================================
+
+push qword 0                                                ;Reserve 8 bytes of storage for the incoming number
+mov  qword rax, 0                                           ;SSE is not involved in this scanf operation
+mov          rdi, eight_byte_format                        ;"%lf"
+mov          rsi, rsp                                       ;Give scanf a point to the reserved storage
+call         scanf                                          ;Call a library function to do the input work
+movsd xmm14, [rsp]                                   ;Copy the inputted number to ymm8
+pop           rax                                           ;Make free the storage that was used by scanf
+
+;=========== Show the startup message =====================================================================================================================================
+
+mov qword  rax, 0                                           ;No data from SSE will be printed
+mov        rdi, stringformat                                ;"%s"
+mov        rsi, promptmessage4                              ;"Welcome to the Bank of Kendall Island "
+call       printf                                           ;Call a library function to make the output
+
+;=========== start clock =================================================================================================================================================
+
+rdtsc
+
+shl rdx, 32
+or rax, rdx
+
+mov r15, rax
+mov qword rax, 0
+mov rdi, clockmessage1
+mov rsi, r15
+
+call printf
+
+
+
+
+;=========== for loop to find interest due by months ======================================================================================================================
+mov        rbx, 0x0000000000000000                          ;Constant 0x4000000000000000 = 0.0 (decimal).
+push       rbx                                              ;Place the constant on the integer stack
+movsd      xmm9, [rsp]                                     ;take the number 0 from stack and put it into xmm11
+pop            rax                                          ;Make free the storage that was used
+
+mov        rbx, 0x0000000000000000                          ;Constant 0x4000000000000000 = 0.0 (decimal).
+push       rbx                                              ;Place the constant on the integer stack
+movsd      xmm10, [rsp]                                     ;take the number 0 from stack and put it into xmm11
+pop            rax                                          ;Make free the storage that was used
+
+mov        rbx, 0x3FF0000000000000                          ;Constant 0x3FF0000000000000 = 1.0 (decimal).
+push       rbx                                              ;Place the constant on the integer stack
+movsd      xmm11, [rsp]                                     ;take the number 1 from stack and put it into xmm10
+pop            rax                                          ;Make free the storage that was used
+
+mov        rbx, 0x0000000000000000                          ;Constant 0x3FF0000000000000 = 0.0 (decimal).
+push       rbx                                              ;Place the constant on the integer stack
+movsd      xmm12, [rsp]                                     ;take the number 1 from stack and put it into xmm10
+pop            rax                                          ;Make free the storage that was used
+
+mov        rbx, 0x3FE0000000000000                          ;Constant 0x3FF0000000000000 = 0.5 (decimal).
+push       rbx                                              ;Place the constant on the integer stack
+movsd      xmm13, [rsp]                                     ;take the number 1 from stack and put it into xmm10
+pop            rax                                          ;Make free the storage that was used
+
+push           qword 0                                      ;Reserve 8 bytes of storage for the incoming number
+push           qword 0                                      ;Reserve 8 bytes of storage for the incoming number
+push           qword 0                                      ;Reserve 8 bytes of storage for the incoming number
+push           qword 0                                      ;Reserve 8 bytes of storage for the incoming number
+
+vmovupd        ymm8, ymm15
+
+vmovupd        [rsp], ymm8                                  ;put previously obtained number into stack for printing
+vbroadcastsd   ymm3, [rsp]                                  ;put first number from stack into ymm4
+pop            rax                                          ;Make free the storage that was used
+
+vbroadcastsd   ymm2, [rsp]                                  ;put second number from stack into ymm3
+pop            rax                                          ;Make free the storage that was used
+
+vbroadcastsd   ymm1, [rsp]                                  ;put third number from stack into ymm2
+pop            rax                                          ;Make free the storage that was used
+
+vbroadcastsd   ymm0, [rsp]                                  ;put fourth number from stack into ymm1
+pop            rax                                          ;Make free the storage that was used
+
+
+vmovupd ymm6, ymm9
+vmovupd ymm0, ymm2
+vmovupd ymm1, ymm3
+movsd xmm7, xmm13
+
+prep:                                                        ;bookmarker for the for loop
+
+mulsd        xmm7, xmm13
+addsd         xmm12, xmm11
+
+
+
+ucomisd       xmm12, xmm14
+jne            prep
+jmp           while
+
+
+
+while:                                                        ;bookmarker for the for loop
+
+mulsd        xmm7, xmm13
+vmulpd        ymm1, ymm1, ymm3
+vmulpd        ymm0, ymm0, ymm2
+
+
+ucomisd       xmm9, xmm11
+jb            failsafe
+jmp           itsgood
+
+failsafe:
+mulsd        xmm7, xmm13
+
+
+addsd       xmm9, xmm11
+addsd       xmm6, xmm11
+
+ucomisd     xmm10, xmm13                                    ;compare counter and how many months are needed
+jb         while                                             ;if counter isn't equal to months go back to for bookmarker
+jmp         outofloop                                      ;if they are equal exit loop
+
+
+
+itsgood:
+mulsd        xmm7, xmm13
+
+
+
+
+vmulpd        ymm6, ymm9
+
+vdivpd        ymm4, ymm0, ymm6
+vdivpd        ymm5, ymm1, ymm6
+
+
+addsd         xmm9, xmm11
+
+
+ucomisd     xmm4, xmm7                                     ;compare counter and how many months are needed
+jb          nextone
+jmp         while
+nextone:
+ucomisd     xmm5, xmm7
+jb         outofloop                                             ;if counter isn't equal to months go back to for bookmarker
+jmp         while                                       ;if they are equal exit loop
+outofloop:                                                  ;bookmarker to exit loop
+movsd       xmm0, xmm9
+
+
+;=========== Show answermessage2 ==========================================================================================================================================
+push qword 0
+mov qword  rax, 1                                           ;No data from SSE will be printed
+mov        rdi, promptmessage5                              ;"Loan amounts : %23.18lf %23.18lf %23.18lf %23.18lf"
+call       printf                                           ;Call a library function to make the output
+pop            rax                                          ;Make free the storage that was used by scanf
+
+;=========== start clock =================================================================================================================================================
+
+rdtsc
+
+shl rdx, 32
+
+or rax, rdx
+
+mov r14, rax
+mov qword rax, 0
+mov rdi, clockmessage2
+mov rsi, r14
+
+call printf
+
+;=========== start clock =================================================================================================================================================
+mov        rbx, 0x400B333333333333                          ;Constant 0x4000000000000000 = 3.4 (decimal).
+push       rbx                                              ;Place the constant on the integer stack
+movsd      xmm2, [rsp]                                     ;take the number 0 from stack and put it into xmm11
+pop            rax                                          ;Make free the storage that was used
+
+mov        rbx, 0x41CDCD6500000000                         ;Constant 0x4000000000000000 = 1 000 000 000(decimal).
+push       rbx                                              ;Place the constant on the integer stack
+movsd      xmm3, [rsp]                                     ;take the number 0 from stack and put it into xmm11
+pop            rax                                          ;Make free the storage that was used
+
+mov rbx, r14
+push rbx
+movsd      xmm0, [rsp]                                     ;take the number 0 from stack and put it into xmm11
+pop rax
+
+mov rbx, r15
+push rbx
+movsd      xmm1, [rsp]                                     ;take the number 0 from stack and put it into xmm11
+pop rax
+
+subsd xmm0, xmm1
+
+divsd xmm0, xmm2
+
+divsd xmm0, xmm3
+
+
+
+;=========== Show answermessage2 ==========================================================================================================================================
+push qword 0
+mov qword  rax, 1                                           ;No data from SSE will be printed
+mov        rdi, promptmessage6                              ;"Loan amounts : %23.18lf %23.18lf %23.18lf %23.18lf"
+call       printf                                           ;Call a library function to make the output
+pop            rax                                          ;Make free the storage that was used by scanf
+
+;===== Retrieve a copy of the quotient that was backed up earlier =========================================================================================================
+
+;pop        r14                                              ;A copy of the quotient is in r14 (temporary storage)
+
+;Now the stack is in the same state as when the application area was entered.  It is safe to leave this application area.
+
+
+
+;==========================================================================================================================================================================
+;===== Begin State Component Restore ======================================================================================================================================
+;==========================================================================================================================================================================
+
+;===== Check the flag to determine if state components were really backed up ==============================================================================================
+
+pop        rbx                                              ;Obtain a copy of the flag that indicates state component backup or not.
+cmp        rbx, 0                                           ;If there was no backup of state components then jump past the restore section.
+je         setreturnvalue                                   ;Go to set up the return value.
+
+;Continue with restoration of state components;
+
+;Precondition: edx:eax must hold the state component bitmap.  Therefore, go get a new copy of that bitmap.
+
+;Preconditions for obtaining the bitmap from the cpuid instruction
+mov        rax, 0x000000000000000d                          ;Place 13 in rax.  This number is provided in the Intel manual
+mov        rcx, 0                                           ;0 is parameter for subfunction 0
+
+;Call the function
+cpuid                                                       ;cpuid is an essential function that returns information about the cpu
+
+;Postcondition: The bitmap in now in edx:eax
+
+;Future insurance: Make sure the bitmap is limited to a maximum of 3 state components.
+mov        r15, 7
+and        rax, r15
+mov        r15, 0
+and        rdx, r15
+
+xrstor     [backuparea]
+;==========================================================================================================================================================================
+;===== End State Component Restore ========================================================================================================================================
+;==========================================================================================================================================================================
+
+
+setreturnvalue: ;=========== Set the value to be returned to the caller ===================================================================================================
+
+push       r14                                              ;r14 continues to hold the first computed floating point value.
+movsd      xmm0, [rsp]                                      ;That first computed floating point value is copied to xmm0[63-0]
+pop        r14                                              ;Reverse the push of two lines earlier.
+
+;=========== Restore GPR values and return to the caller ==================================================================================================================
+
+popf                                                        ;Restore rflags
+pop        r15                                              ;Restore r15
+pop        r14                                              ;Restore r14
+pop        r13                                              ;Restore r13
+pop        r12                                              ;Restore r12
+pop        r11                                              ;Restore r11
+pop        r10                                              ;Restore r10
+pop        r9                                               ;Restore r9
+pop        r8                                               ;Restore r8
+pop        rdi                                              ;Restore rdi
+pop        rsi                                              ;Restore rsi
+pop        rdx                                              ;Restore rdx
+pop        rcx                                              ;Restore rcx
+pop        rbx                                              ;Restore rbx
+pop        rbp                                              ;Restore rbp
+
+ret                                                         ;No parameter with this instruction.  This instruction will pop 8 bytes from
+                                                            ;the integer stack, and jump to the address found on the stack.
+;========== End of program trapezoid.asm ======================================================================================================================================
+;========1=========2=========3=========4=========5=========6=========7=========8=========9=========0=========1=========2=========3=========4=========5=========6=========7**
